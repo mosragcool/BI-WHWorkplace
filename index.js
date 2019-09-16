@@ -12,9 +12,10 @@ app.listen(process.env.PORT || 1234, () => console.log('webhook is listening'));
 
 
 app.post('/BI/webhook', (req, res) => {
+  
     try {
-
-            console('Start Post 16-6-2019');
+        console.log('Start Post 16-6-2019');
+           
         let body = req.body;
 
        
@@ -217,7 +218,7 @@ function ProcessMessage(sender_psid, message) {
                 var stext = '';
 
                 for (i = 1; i < command.length; i++) {
-                    stext += command[i]+" ";
+                    stext += command[i]+' ';
                   }
 
                   stext =  stext.substring(0, stext.length - 1);
