@@ -175,15 +175,16 @@ function ProcessMessage(sender_psid, message) {
         var empty = "คำถามไม่ถูกตรงตามรูปแบบ ต้องระบุเป็น Ex. Sales store, Store= Code ,Number,Short name";
 
         if (command.length > 1) {
-            var request_body = JSON.stringify({
-
-                "message": command[1]
-
-            });
-
-
+           
             if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') 
             {
+                var request_body = JSON.stringify({
+
+                    "message": command[1]
+    
+                });
+    
+
                 var options = {
                     host: '10.17.1.32',
                     port: 9862,
@@ -213,6 +214,21 @@ function ProcessMessage(sender_psid, message) {
             }
             else if(command[0].toUpperCase() === 'STOCK')
             {
+                var stext = '';
+
+                for (i = 1; i < command.length; i++) {
+                    stext += command[i]+" ";
+                  }
+
+
+                var request_body = JSON.stringify({
+
+                    "message": stext
+    
+                });
+    
+
+
                 var options = {
                     host: '10.17.1.32',
                     port: 9862,
