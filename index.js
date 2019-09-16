@@ -15,7 +15,7 @@ app.post('/BI/webhook', (req, res) => {
   
     try {
         console.log('Start Post 16-6-2019');
-           
+        console.log('2');
         let body = req.body;
 
        
