@@ -223,7 +223,7 @@ function ProcessMessage(sender_psid, message) {
 
                   stext =  stext.substring(0, stext.length - 1);
 
-                  console('stext : '+stext);
+                  console.log('stext : '+stext);
 
                 var request_body = JSON.stringify({
 
