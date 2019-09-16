@@ -14,7 +14,7 @@ app.listen(process.env.PORT || 1234, () => console.log('webhook is listening'));
 app.post('/BI/webhook', (req, res) => {
   
     try {
-        console.log('Start Post');
+        console.log('PostWebHook');
        
         let body = req.body;
 
@@ -399,7 +399,7 @@ app.get('/BI/webhook', (req, res) => {
     
     // Your verify token. Should be a random string.
     let VERIFY_TOKEN = "B4wHhfBcfs7d5nP1dp9t7qn4053n9oG4"
-    console.log('Get 16-6-2019');
+    console.log('GetWebHook');
     // Parse the query params
     let mode = req.query['hub.mode'];
     let token = req.query['hub.verify_token'];
