@@ -209,7 +209,37 @@ function ProcessMessage(sender_psid, message) {
                 });
                 req.write(request_body);
                 req.end();
-            } else {
+            }
+            else if(command[0].toUpperCase() === 'STOCK')
+            {
+                var options = {
+                    host: '10.17.1.32',
+                    port: 9862,
+                    path: '/api/v1/Stock/GetStock',
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Content-Lenght": Buffer.byteLength(request_body)
+                    }
+                }
+
+                var http = require('http');
+
+
+                var req = http.request(options, function(res) {
+                    res.setEncoding('utf8');
+
+                    res.on('data', function(chunk) {
+                        SendMessage(sender_psid, chunk);
+
+
+
+                    });
+                });
+                req.write(request_body);
+                req.end();
+            }
+            else {
                 SendMessage(sender_psid, empty);
             }
         } else {
