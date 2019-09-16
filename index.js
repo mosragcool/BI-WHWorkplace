@@ -12,10 +12,10 @@ app.listen(process.env.PORT || 1234, () => console.log('webhook is listening'));
 
 
 app.post('/BI/webhook', (req, res) => {
-  
+
     try {
         console.log('PostWebHook');
-       
+
         let body = req.body;
 
         console.log(body);
@@ -37,40 +37,28 @@ app.post('/BI/webhook', (req, res) => {
                 //   console.log(webhook_event.message);
 
                 console.log(webhook_event);
-                if (webhook_event.message) 
-                {
+                if (webhook_event.message) {
 
-                    if(webhook_event.message.text)
-                    {
-                         if (webhook_event.thread) 
-                         {
+                    if (webhook_event.message.text) {
+                        if (webhook_event.thread) {
+                            var sender_psid = webhook_event.thread.id;
+                            var splitNameBot = webhook_event.message.text.split('@OFMOpBot');
+                            if (splitNameBot.length > 1) {
+                                var Message = splitNameBot[1]; //.replace(/ /g,'')
+                            }
+                            ProcessMessage(sender_psid, Message);
 
-
-                             var sender_psid = webhook_event.thread.id;
-
-
-                             var splitNameBot = webhook_event.message.text.split('@OFMOpBot');
-                             if (splitNameBot.length > 1) 
-                             {
-                               var Message = splitNameBot[1]; //.replace(/ /g,'')
-                              }
-                              ProcessMessage(sender_psid, Message);
-
-                              //var splitNameBot = webhook_event.message.text.split('@OFM - ITOps Bot ');
-                               //if(splitNameBot.length>1) ProcessMessage(sender_psid, splitNameBot[1]); 
-                        } 
-                        else 
-                        {
+                            //var splitNameBot = webhook_event.message.text.split('@OFM - ITOps Bot ');
+                            //if(splitNameBot.length>1) ProcessMessage(sender_psid, splitNameBot[1]); 
+                        } else {
                             sender_psid = webhook_event.sender.id;
 
-                             var Message = webhook_event.message.text; //.replace(/ /g,'');
-                             ProcessMessage(sender_psid, Message);
+                            var Message = webhook_event.message.text; //.replace(/ /g,'');
+                            ProcessMessage(sender_psid, Message);
                         }
-                    } 
-                    else console.log('No property Text');
+                    } else console.log('No property Text');
 
-                }
-                else console.log('No property Message');
+                } else console.log('No property Message');
 
 
             });
@@ -182,15 +170,14 @@ function ProcessMessage(sender_psid, message) {
         var empty = "คำถามไม่ถูกตรงตามรูปแบบ ต้องระบุเป็น Ex. Sales store, Store= Code ,Number,Short name";
 
         if (command.length > 1) {
-           
-            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') 
-            {
+
+            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
                 var request_body = JSON.stringify({
 
                     "message": command[1]
-    
+
                 });
-    
+
 
                 var options = {
                     host: '10.17.1.32',
@@ -218,25 +205,23 @@ function ProcessMessage(sender_psid, message) {
                 });
                 req.write(request_body);
                 req.end();
-            }
-            else if(command[0].toUpperCase() === 'STOCK')
-            {
+            } else if (command[0].toUpperCase() === 'STOCK') {
                 var stext = '';
 
                 for (i = 1; i < command.length; i++) {
-                    stext += command[i]+' ';
-                  }
+                    stext += command[i] + ' ';
+                }
 
-                  stext =  stext.substring(0, stext.length - 1);
+                stext = stext.substring(0, stext.length - 1);
 
-                  console.log('stext : '+stext);
+                console.log('stext : ' + stext);
 
                 var request_body = JSON.stringify({
 
                     "message": stext
-    
+
                 });
-    
+
 
 
                 var options = {
@@ -265,8 +250,7 @@ function ProcessMessage(sender_psid, message) {
                 });
                 req.write(request_body);
                 req.end();
-            }
-            else {
+            } else {
                 SendMessage(sender_psid, empty);
             }
         } else {
@@ -396,7 +380,7 @@ function SendMessage(sender_psid, Message) {
 
 app.get('/BI/webhook', (req, res) => {
 
-    
+
     // Your verify token. Should be a random string.
     let VERIFY_TOKEN = "B4wHhfBcfs7d5nP1dp9t7qn4053n9oG4"
     console.log('GetWebHook');
