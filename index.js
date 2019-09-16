@@ -67,8 +67,10 @@ app.post('/BI/webhook', (req, res) => {
                              ProcessMessage(sender_psid, Message);
                         }
                     } 
-                }
+                    else console.log('No property Text');
 
+                }
+                else console.log('No property Message');
 
 
             });
