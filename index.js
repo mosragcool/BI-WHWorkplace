@@ -14,7 +14,7 @@ app.listen(process.env.PORT || 1234, () => console.log('webhook is listening'));
 app.post('/BI/webhook', (req, res) => {
     try {
 
-    
+            console('Start Post 16-6-2019');
         let body = req.body;
 
        
@@ -182,7 +182,8 @@ function ProcessMessage(sender_psid, message) {
             });
 
 
-            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
+            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') 
+            {
                 var options = {
                     host: '10.17.1.32',
                     port: 9862,
@@ -369,9 +370,10 @@ function SendMessage(sender_psid, Message) {
 
 app.get('/BI/webhook', (req, res) => {
 
+    
     // Your verify token. Should be a random string.
     let VERIFY_TOKEN = "B4wHhfBcfs7d5nP1dp9t7qn4053n9oG4"
-    console.log('Get Complete');
+    console.log('Get 16-6-2019');
     // Parse the query params
     let mode = req.query['hub.mode'];
     let token = req.query['hub.verify_token'];
