@@ -37,33 +37,39 @@ app.post('/BI/webhook', (req, res) => {
                 //   console.log(webhook_event.message);
 
                 console.log(webhook_event);
-                if (webhook_event.message.text) {
-                    if (webhook_event.thread) {
+                if (webhook_event.message) {
+
+if(webhook_event.message.text)
+{
+    if (webhook_event.thread) {
 
 
-                        var sender_psid = webhook_event.thread.id;
+        var sender_psid = webhook_event.thread.id;
 
 
-                        var splitNameBot = webhook_event.message.text.split('@OFMOpBot');
-                        if (splitNameBot.length > 1) {
-                            var Message = splitNameBot[1]; //.replace(/ /g,'')
-                        }
-                        ProcessMessage(sender_psid, Message);
+        var splitNameBot = webhook_event.message.text.split('@OFMOpBot');
+        if (splitNameBot.length > 1) {
+            var Message = splitNameBot[1]; //.replace(/ /g,'')
+        }
+        ProcessMessage(sender_psid, Message);
 
 
 
 
-                        //var splitNameBot = webhook_event.message.text.split('@OFM - ITOps Bot ');
-                        //if(splitNameBot.length>1) ProcessMessage(sender_psid, splitNameBot[1]); 
+        //var splitNameBot = webhook_event.message.text.split('@OFM - ITOps Bot ');
+        //if(splitNameBot.length>1) ProcessMessage(sender_psid, splitNameBot[1]); 
 
-                    } else {
+    } else {
 
 
-                        sender_psid = webhook_event.sender.id;
+        sender_psid = webhook_event.sender.id;
 
-                        var Message = webhook_event.message.text; //.replace(/ /g,'');
-                        ProcessMessage(sender_psid, Message);
-                    }
+        var Message = webhook_event.message.text; //.replace(/ /g,'');
+        ProcessMessage(sender_psid, Message);
+    }
+}
+
+                   
                 }
 
 
