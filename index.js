@@ -220,6 +220,7 @@ function ProcessMessage(sender_psid, message) {
                     stext += command[i]+" ";
                   }
 
+                  console('stext : '+stext);
 
                 var request_body = JSON.stringify({
 
