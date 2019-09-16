@@ -42,7 +42,7 @@ app.post('/BI/webhook', (req, res) => {
                         var sender_psid = webhook_event.thread.id;
 
 
-                        var splitNameBot = webhook_event.message.text.split('@OFM - ITOps Bot');
+                        var splitNameBot = webhook_event.message.text.split('@OFMOpBot');
                         if (splitNameBot.length > 1) {
                             var Message = splitNameBot[1]; //.replace(/ /g,'')
                         }
