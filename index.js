@@ -14,14 +14,15 @@ app.listen(process.env.PORT || 1234, () => console.log('webhook is listening'));
 app.post('/BI/webhook', (req, res) => {
   
     try {
-        console.log('Start Post 16-6-2019');
-        console.log('2');
+        console.log('Start Post');
+       
         let body = req.body;
 
-       
+        console.log(body);
 
 
         if (body.object === 'page') {
+
 
 
 
