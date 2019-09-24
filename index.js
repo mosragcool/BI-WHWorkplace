@@ -7,6 +7,9 @@ express = require('express'),
 app.listen(process.env.PORT || 1234, () => console.log('webhook is listening'));
 var service_host =  '10.17.1.32';
 var service_port = '9862';
+var TypeMessage_Text = "Text";
+var TypeMessage_Generic = "Generic";
+var botName = "@OFMOpBot";
 
 // Creates the endpoint for our webhook
 
@@ -15,11 +18,11 @@ var service_port = '9862';
 app.post('/BI/webhook', (req, res) => {
 
     try {
-        console.log('PostWebHook');
+
 
         let body = req.body;
 
-        console.log(body);
+        // console.log(body);
 
 
         if (body.object === 'page') {
@@ -30,38 +33,37 @@ app.post('/BI/webhook', (req, res) => {
             body.entry.forEach(function(entry) {
 
                 let webhook_event = entry.messaging[0];
-                // console.log('**********');
-                // console.log(webhook_event);
-                // console.log(webhook_event.sender.thread);
-                // console.log(webhook_event.sender);
-                //   console.log(webhook_event.recipient);
-                //   console.log(webhook_event.message);
 
-                console.log(webhook_event);
-                if (webhook_event.message) {
+                if (webhook_event.message && webhook_event.message.text) {
 
-                    if (webhook_event.message.text) {
-                        if (webhook_event.thread) {
-                            var sender_psid = webhook_event.thread.id;
-                            var splitNameBot = webhook_event.message.text.split('@OFMOpBot');
-                            if (splitNameBot.length > 1) {
-                                var Message = splitNameBot[1]; //.replace(/ /g,'')
-                            }
-                            ProcessMessage(sender_psid, Message);
+                    if (webhook_event.thread) {
 
-                            //var splitNameBot = webhook_event.message.text.split('@OFM - ITOps Bot ');
-                            //if(splitNameBot.length>1) ProcessMessage(sender_psid, splitNameBot[1]); 
-                        } else {
-                            sender_psid = webhook_event.sender.id;
 
-                            var Message = webhook_event.message.text; //.replace(/ /g,'');
-                            ProcessMessage(sender_psid, Message);
+                        var sender_psid = webhook_event.thread.id;
+                        var splitNameBot = webhook_event.message.text.split(botName);
+                        if (splitNameBot.length > 1) {
+                            var Message = splitNameBot[1]; //.replace(/ /g,'')
                         }
-                    } else console.log('No property Text');
+                        ProcessMessage(sender_psid, Message);
+                    } else {
+                        sender_psid = webhook_event.sender.id;
 
-                } else console.log('No property Message');
+                        var Message = webhook_event.message.text;
+                        ProcessMessage(sender_psid, Message);
+                    }
+                } else if (webhook_event.postback) {
+                
+                   var splitMessage = webhook_event.postback.payload.split(',');
 
+                    var sender_psid = splitMessage[0];
+                    var Message = splitMessage[1];
+                    ProcessMessage(sender_psid, Message);
 
+                }
+                //  else console.log('No property Message');
+
+                //}
+                // else console.log('No property Message');
             });
 
             // Returns a '200 OK' response to all requests
@@ -75,76 +77,7 @@ app.post('/BI/webhook', (req, res) => {
     } catch (express) {
         console.log('Post Web Hook : ' + express);
     }
-    // var botID = '293281931540823';
 
-    // ProcessMessage("s","J TC");
-
-    /*
-  let body = req.body;
-
-  console.log(body.object);
-
-
- // CallAPI(); 
-
- body.entry.forEach(function(entry) {
-
-  console.log(entry);
-  //console.log(body.entry[0].changes);
-  //console.log(entry.changes[0].value.from);
-  
-
-  var sender_psid = entry.changes[0].value.from.id;
-  var message = entry.changes[0].value.message;
- var count = entry.changes[0].value.to.data.length;
- //console.log("จำนวนคนส่ง "+count);
-
-  entry.changes[0].value.to.data.forEach(function(recipient){
-
-   // var recipient_psid = sender.id;
- 
-    if(botID == recipient.id)
-  {
-     
-    console.log(body);
- //   console.log("******");
- //   console.log(entry);
- //   console.log("******");
- //   console.log(req);
-   // console.log(entry.changes[0].value);
-
- //   console.log("End");
-
-if(count > 1 )//& recipient.name.)
-{
-  var splitNameBot = message.split('@OFM - ITOps Bot');
-  if(splitNameBot.length>1) ProcessMessage(sender_psid, splitNameBot[1]); 
-  var splitNameBot = message.split('@OFM - ITOps Bot ');
-  if(splitNameBot.length>1) ProcessMessage(sender_psid, splitNameBot[1]); 
-}
-else  ProcessMessage(sender_psid, message);   
-
-
-  //  console.log(sender_psid);
-    //sender_psid = '100036992748686';
-    //console.log('OK');
-  
-  }
-  
-  
-  
-
-  });
-
-
-
-});
-*/
-
-
-
-
-    //res.status(200).send('EVENT_RECEIVED');
 });
 
 
@@ -170,16 +103,53 @@ function ProcessMessage(sender_psid, message) {
         var command = message.split(' ');
         var empty = "คำถามไม่ถูกตรงตามรูปแบบ ต้องระบุเป็น Ex. Sales store, Store= Code ,Number,Short name";
 
-        if (command.length > 1) {
-           
-            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') 
-            {
+        if (command.length > 0 && command.length == 1) {
+
+
+            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
+
+
+                var options = {
+                    host: service_host,
+                    port: service_port,
+                    path: '/api/v1/Sales/GetDistrict',
+                    method: "GET"
+                }
+
+                var http = require('http');
+
+
+                var req = http.request(options, function(res) {
+                    res.setEncoding('utf8');
+
+                    res.on('data', function(chunk) {
+
+                        SendMessage(TypeMessage_Generic, sender_psid, chunk);
+
+
+
+                    });
+                });
+                req.end();
+
+
+
+            } else {
+                SendMessage(TypeMessage_Text, sender_psid, empty);
+            }
+
+
+        } else if (command.length > 1) {
+
+
+
+            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
                 var request_body = JSON.stringify({
 
                     "message": command[1]
-    
+
                 });
-    
+
 
                 var options = {
                     host: service_host,
@@ -199,7 +169,7 @@ function ProcessMessage(sender_psid, message) {
                     res.setEncoding('utf8');
 
                     res.on('data', function(chunk) {
-                        SendMessage(sender_psid, chunk);
+                        SendMessage(TypeMessage_Text, sender_psid, chunk);
 
 
 
@@ -207,27 +177,22 @@ function ProcessMessage(sender_psid, message) {
                 });
                 req.write(request_body);
                 req.end();
-            }
-
-            else if(command[0].toUpperCase() === 'LOC' || command[0].toUpperCase() === 'LOCATION')
-            {
+            } else if (command[0].toUpperCase() === 'LOC' || command[0].toUpperCase() === 'LOCATION') {
                 var stext = '';
 
                 for (i = 1; i < command.length; i++) {
-                    stext += command[i]+' ';
-                  }
+                    stext += command[i] + ' ';
+                }
 
-                  stext =  stext.substring(0, stext.length - 1);
+                stext = stext.substring(0, stext.length - 1);
 
                 //  console.log('stext : '+stext);
 
                 var request_body = JSON.stringify({
 
                     "message": stext
-    
-                });
-    
 
+                });
 
                 var options = {
                     host: service_host,
@@ -247,7 +212,7 @@ function ProcessMessage(sender_psid, message) {
                     res.setEncoding('utf8');
 
                     res.on('data', function(chunk) {
-                        SendMessage(sender_psid, chunk);
+                        SendMessage(TypeMessage_Text, sender_psid, chunk);
 
 
 
@@ -255,25 +220,23 @@ function ProcessMessage(sender_psid, message) {
                 });
                 req.write(request_body);
                 req.end();
-            }
-            else if(command[0].toUpperCase() === 'STOCK')
-            {
+            } else if (command[0].toUpperCase() === 'STOCK') {
                 var stext = '';
 
                 for (i = 1; i < command.length; i++) {
-                    stext += command[i]+' ';
-                  }
+                    stext += command[i] + ' ';
+                }
 
-                  stext =  stext.substring(0, stext.length - 1);
+                stext = stext.substring(0, stext.length - 1);
 
                 //  console.log('stext : '+stext);
 
                 var request_body = JSON.stringify({
 
                     "message": stext
-    
+
                 });
-    
+
 
 
                 var options = {
@@ -294,7 +257,7 @@ function ProcessMessage(sender_psid, message) {
                     res.setEncoding('utf8');
 
                     res.on('data', function(chunk) {
-                        SendMessage(sender_psid, chunk);
+                        SendMessage(TypeMessage_Text, sender_psid, chunk);
 
 
 
@@ -302,50 +265,53 @@ function ProcessMessage(sender_psid, message) {
                 });
                 req.write(request_body);
                 req.end();
+            } else if (command[0].toUpperCase() === 'DISTRICT') {
+
+
+
+                var options = {
+                    host: service_host,
+                    port: service_port,
+                    path: '/api/v1/Sales/GetStore?DistrictID=' + command[1],
+                    method: "GET"
+
+                }
+
+
+
+                var http = require('http');
+
+
+                var req = http.request(options, function(res) {
+                    res.setEncoding('utf8');
+
+                    res.on('data', function(chunk) {
+                        SendMessage(TypeMessage_Generic, sender_psid, chunk);
+
+
+
+                    });
+                });
+                req.end();
+
+
+
+            }
+            else if (command[0].toUpperCase() === 'CALL') {
+                SendMessage(TypeMessage_Text, sender_psid, "กำลังทำจ้า");
+            }
+            else  if (command[0].toUpperCase() === 'HELP') {
+                SendMessage(TypeMessage_Text, sender_psid, "กำลังทำจ้า");
             }
             else {
-                SendMessage(sender_psid, empty);
+                SendMessage(TypeMessage_Text, sender_psid, empty);
             }
+
         } else {
-            SendMessage(sender_psid, empty);
+            SendMessage(TypeMessage_Text, sender_psid, empty);
         }
 
-        //  if(Value === "")
-        //  {
-        //    console.log(Value);
-        //     Value = "ไม่มีคำสั่งดังกล่าว";
-        //   }
 
-
-
-
-        /*
-
-    var options = {
-        host: '10.17.1.32',
-        port: 9862,
-        path: '/api/v1/Sales/GetSales?Message='+message, 
-        method: "GET",
-        headers: {
-          "Content-Type": "application/javascript"
-        }
-      }
-
-      var http = require('http');
-   
-      
-      var req = http.request(options, function(res) {
-        res.setEncoding('utf8');
-
-        res.on('data', function (chunk) {
-          console.log(chunk);
-         // SendMessage(sender_psid,chunk);
-         
-        });
-      });
-      req.end();
- 
-     */
 
 
     } catch (express) {
@@ -355,79 +321,163 @@ function ProcessMessage(sender_psid, message) {
 
 }
 
-function SendMessage(sender_psid, Message) {
+function SendMessage(type, sender_psid, Message) {
     // Construct the message body
     try {
-
+        var arrayMessage = [];
         var request_body = ''
-        if (sender_psid.search('t_') > -1) {
+        if (type === TypeMessage_Generic) {
 
-            request_body = JSON.stringify({
-                "messaging_type": "RESPONSE",
-                "recipient": {
-                    "thread_key": sender_psid
-                },
-                "message": {
-                    "text": Message
+
+            var Value = JSON.parse(Message);
+
+            if (Value && Value.length > 0) {
+
+
+                let countroop = Math.floor(Value.length / 10);
+
+                if (Value.length % 10 != 0) countroop++;
+
+                for (let j = 0; j < countroop; j++) {
+                    request_body = ''
+                    var data = '';
+                    for (i = 0; i < 10; i++) {
+
+                        let index = (j * 10) + i;
+
+                        if (index == Value.length) break;
+
+
+                        data += '{ "title": "' + Value[index]['title'] + '","image_url": "' + Value[index]['image_url'] +
+                            '","subtitle": "' + Value[index]['subTitle'] + '"';
+                        //  +'","default_action":{"type":"'
+                        //  +Value[index]['default_action']['type']+'","url": "'+Value[index]['default_action']['url']
+                        //  +'","webview_height_ratio": "'+Value[index]['default_action']['webview_height_ratio']+'"}';
+
+                        if (Value[index]['button']['type'] === 'postback') {
+                            data += ',"buttons": [{"type":"' + Value[index]['button']['type'] 
+                            + '","title":"' + Value[index]['button']['title'] 
+                            + '","payload":"' +sender_psid+","+ Value[index]['button']['payload'] + '"}]';
+                        }
+
+                        data += '}';
+
+                        if (index != 10 && index != Value.length - 1) data += ",";
+                    }
+                    data = "[" + data + "]";
+
+
+                    if (sender_psid.search('t_') > -1) {
+                        request_body = JSON.stringify({
+                            "messaging_type": "RESPONSE",
+                            "recipient": {
+                                "thread_key": sender_psid
+                            },
+                            "message": {
+                                "attachment": {
+                                    "type": "template",
+                                    "payload": {
+                                        "template_type": "generic",
+                                        "image_aspect_ratio": "square",
+                                        "elements": data
+                                    }
+                                }
+                            }
+                        });
+
+                    } else {
+
+                        request_body = JSON.stringify({
+                            "messaging_type": "RESPONSE",
+                            "recipient": {
+                                "id": sender_psid
+                            },
+                            "message": {
+                                "attachment": {
+                                    "type": "template",
+                                    "payload": {
+                                        "template_type": "generic",
+                                        "image_aspect_ratio": "square",
+                                        "elements": data
+                                    }
+                                }
+                            }
+
+                        });
+                    }
+                    arrayMessage.push(request_body);
+
                 }
-            });
-        } else {
-
-            request_body = JSON.stringify({
-                "messaging_type": "RESPONSE",
-                "recipient": {
-                    "id": sender_psid
-                },
-                "message": {
-                    "text": Message
-                }
-            });
-        }
 
 
-
-
-        var options = {
-            host: "graph.facebook.com",
-            path: "/v4.0/me/messages?access_token=DQVJ0WXM1NFVCc2xvRTVLZAU9wMjJCVGlGdlZAmRWdWUzVzMDJmekVnSS1hbHdOaVVFV3cwa2FYbnZAxX0NnOU9OX0l1R3c5cmtuVTkxSmxuc2QtX2NwdGw3SzRKS3Q4NU9YbEtsMmp1azBhdGFHcVFOak1faGdNUDlCMVgxc3ZAqMFhqd2RjQXhGRFlzTjRITEtnMDVYeC1qVEtKd2NZAZATZAPZAzN1MHJ2YjRqb1pSb0w1LUlkV0s0QUYzYmxzZA1pTWXF0dldDWW9R",
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Content-Lenght": Buffer.byteLength(request_body)
             }
+
+        } else {
+            if (sender_psid.search('t_') > -1) {
+
+                request_body = JSON.stringify({
+                    "messaging_type": "RESPONSE",
+                    "recipient": {
+                        "thread_key": sender_psid
+                    },
+                    "message": {
+                        "text": Message
+                    }
+                });
+            } else {
+
+                request_body = JSON.stringify({
+                    "messaging_type": "RESPONSE",
+                    "recipient": {
+                        "id": sender_psid
+                    },
+                    "message": {
+                        "text": Message
+                    }
+                });
+            }
+
+            arrayMessage.push(request_body);
         }
 
-        var https = require('https');
+
+        arrayMessage.forEach(element => {
+            setTimeout(function() {
+
+                var options = {
+                    host: "graph.facebook.com",
+                    path: "/v4.0/me/messages?access_token=DQVJ0WXM1NFVCc2xvRTVLZAU9wMjJCVGlGdlZAmRWdWUzVzMDJmekVnSS1hbHdOaVVFV3cwa2FYbnZAxX0NnOU9OX0l1R3c5cmtuVTkxSmxuc2QtX2NwdGw3SzRKS3Q4NU9YbEtsMmp1azBhdGFHcVFOak1faGdNUDlCMVgxc3ZAqMFhqd2RjQXhGRFlzTjRITEtnMDVYeC1qVEtKd2NZAZATZAPZAzN1MHJ2YjRqb1pSb0w1LUlkV0s0QUYzYmxzZA1pTWXF0dldDWW9R",
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Content-Lenght": Buffer.byteLength(element)
+                    }
+                }
+
+                var https = require('https');
 
 
-        var req = https.request(options, function(res) {
-            res.setEncoding('utf8');
-            res.on('data', function(chunk) {
-                // console.log('Complete');
-            });
-        })
-        req.write(request_body);
-        req.end();
+                var req = https.request(options, function(res) {
+                    res.setEncoding('utf8');
+                    res.on('data', function(chunk) {
+                        console.log('Complete : ' + chunk);
+                    });
+                })
+                req.write(element);
+                req.end();
+
+            }, 1000);
+        });
+
+
 
     } catch (express) {
         console.log('SendMessage :' + express);
     }
 
-
-    /*
-      request({
-        "uri": "https://graph.facebook.com/v4.0/me/messages",
-        "qs": { "access_token": "DQVJzemlHdVlSRGFjcDhCWVFpcWo2VzE3R3R2M3M3VWQzX1drLWJpcTVqZA19IWVpCaFBYSEVKbW5yeHFMdVMzSnp1QjFobWktcDJYX1M1a3RIeHplWktweEhBczdCaGVkLTVFQ2RFdnp1MzhRMFNLUjRXY29tZA1N1TjNoS3lWT0VCZAU9xVmhVekxPZAmJQUDNMdkdwUFNoeHlKRW1xT2xFVVBrZATRxWTZAtOVNxd0ZAIZAGxFZAS12ekR3SkFLM3VlaDlhRk52cjVn" },
-       "method": "POST",
-        "json": request_body
-      }, function (err, res, body) {
-        if (!err) {
-          console.log('message sent!')
-        } else {
-          console.error("Unable to send message:" + err);
-        }
-      });   */
 }
+
+
 
 
 
