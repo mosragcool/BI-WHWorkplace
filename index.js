@@ -134,7 +134,66 @@ function ProcessMessage(sender_psid, message) {
 
 
 
-            } else {
+            }
+            else if (command[0].toUpperCase() === 'HELP') {
+
+                var s = '##############help#################\n';
+                s += 'Pattern Chat with Bot\n'
+                s +=  '\n';
+                s +=  '1.Question Daily Sales Volumn to Bot.\n';
+                s +=  '\n';
+                s +=  '#Pattern I Chat text\n';
+                s +=  'Format:"Sales(space)XXXXX"\n';
+                s +=  '"Sales"-Fixed wording\n';
+                s +=  '"XXXXX"-(StoreNumber or StoreCode or Thai Name or Eng Name or Short Name Code)\n';
+                s +=  '\n';
+                s +=  'EX:\n';
+                s +=  'Sales 58\n';
+                s +=  'Sales JTC\n';
+                s +=  '\n';
+                s +=  '#Pattern II Carousel\n';
+                s +=  'Keyword for Carousel is (Sales, Sale, ยอดขาย)\n';
+                s +=  '* when use this keyword Bot show Carousel\n';
+                s +=  '1st select carousel district Manager\n';
+                s +=  '2nd select carousel store under district Manager\n';
+                s +=  'Bot will display Daily Sale Volumn\n';
+                s +=  '\n';
+                s +=  '2.Question Stock Realtime by Store to Bot.\n';
+                s +=  '\n';
+                s +=  '#Pattern I Chat text\n';
+                s +=  'Format:"Stock(space)XXXXX(space)PID/SKU(space)YYYYYYY(space)YYYYYYY...\n';
+                s +=  '"Stock"-Fixed wording\n';
+                s +=  '"PID/SKU"-use one for question "PID" or "SKU"\n';
+                s +=  '"XXXXX"-(StoreNumber or StoreCode or Thai Name or Eng Name or Short Name Code)\n'; 
+                s +=  '"YYYYYYY"-PID Code or SKU Code (limited 5 items)\n';
+                s +=  '\n';
+                s +=  'EX:\n';
+                s +=  'Stock JTC PID 8000004 8151390 8000005 8030370 8031610\n';
+                s +=  'Stock JTC SKU 149345 149347 149353 149361 14936\n';
+                s +=  'Stock 58 PID 8000004 8151390 8000005 8030370 8031610\n';
+                s +=  '\n';
+                s +=  '\n';
+                s +=  '3.Question Check Location near Stock to Bot.\n';
+                s +=  '\n';
+                s +=  '#Pattern I Chat text\n';
+                s +=  'Format:"LOC(space)ZZZZZZ(space)PID/SKU(space)YYYYYYY(space)YYYYYYY..."\n';
+                s +=  '"Stock"-Fixed wording\n';
+                s +=  '"PID/SKU"-use one for question "PID" or "SKU"\n';
+                s +=  '"ZZZZZZ"-(Location รหัสเขตที่ต้องการลูกค้าต้องการสินค้า)\n'; 
+                s +=  '"YYYYYYY"-PID Code or SKU Code (limited 5 items)\n';
+                s +=  'Note: sequence setup by store operation\n';
+                s +=  'เขต-สัมพันธวงศ์ ,ป้อมปราบศัตรูพ่าย,บางคอแหลม,คลองสาน,ยานนาวา,ราชเทวี,ดินแดง,พญาไท,สาทร,ห้วยขวาง,บางรัก,ปทุมวัน,คลองเตย,วัฒนา\n';
+                s +=  '\n'
+                s +=  'EX:\n';
+                s +=  'LOC ดินแดง PID 8000004 8151390 8000005 8030370 8031610\n';
+                s +=  'LOC ดินแดง SKU 149345 149347 149353 149361 14936\n';
+                s +=  'LOC ห้วยขวาง PID 8000004 8151390 8000005 8030370 8031610\n';
+              //  s +=  '--------------------------------\n';
+                
+               // console.log('Value : '+s);
+                SendMessage(TypeMessage_Text, sender_psid, s);
+            }
+             else {
                 SendMessage(TypeMessage_Text, sender_psid, empty);
             }
 
@@ -297,12 +356,7 @@ function ProcessMessage(sender_psid, message) {
 
 
             }
-            else if (command[0].toUpperCase() === 'CALL') {
-                SendMessage(TypeMessage_Text, sender_psid, "กำลังทำจ้า");
-            }
-            else  if (command[0].toUpperCase() === 'HELP') {
-                SendMessage(TypeMessage_Text, sender_psid, "กำลังทำจ้า");
-            }
+
             else {
                 SendMessage(TypeMessage_Text, sender_psid, empty);
             }
