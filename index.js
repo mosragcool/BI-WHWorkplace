@@ -47,11 +47,12 @@ app.post('/BI/webhook', (req, res) => {
                         var splitNameBot = webhook_event.message.text.split(botName);
                         if (splitNameBot.length > 1) {
                              Message = splitNameBot[1]; //.replace(/ /g,'')
+                             ProcessMessage(sender_id,recipient_id, Message);
                         }
-                        ProcessMessage(sender_id,recipient_id, Message);
+                       
+                       
                     } else {
                         recipient_id = webhook_event.sender.id;
-
                          Message = webhook_event.message.text;
                         ProcessMessage(sender_id,recipient_id, Message);
                     }
@@ -162,6 +163,7 @@ async function ProcessMessage(sender_id, recipient_id, message) {
         }
 
         if (CountSpace != 0) message = message.slice(CountSpace, message.length);
+      //  console.log('sender_id :'+sender_id);
 
         var level = await CallAPI("GET", service_host, service_port, '/api/v1/Permission/CheckPermission?PSID=' + sender_id);
 
@@ -238,15 +240,15 @@ async function ProcessMessage(sender_id, recipient_id, message) {
 
                     */
 
-                    SendMessage(TypeMessage_Text, sender_id, messageHelp);
+                    SendMessage(TypeMessage_Text, recipient_id, messageHelp);
                 } else {
                     if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
                         if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'SALE') {
                             SendMessage(TypeMessage_Generic, recipient_id, await CallAPI("GET", service_host, service_port, '/api/v1/Sales/GetDistrict'));
-                        } else SendMessage(TypeMessage_Text, sender_id, sNotpermisstion);
+                        } else SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
 
                     } else {
-                        SendMessage(TypeMessage_Text, sender_id, empty);
+                        SendMessage(TypeMessage_Text, recipient_id, empty);
                     }
 
 
@@ -267,7 +269,7 @@ async function ProcessMessage(sender_id, recipient_id, message) {
 
                         SendMessage(TypeMessage_Text, recipient_id, await CallAPI("POST", service_host, service_port, '/api/v1/Sales/GetSales', request_body));
                     } else {
-                        SendMessage(TypeMessage_Text, sender_id, sNotpermisstion);
+                        SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
                     }
 
 
@@ -290,7 +292,7 @@ async function ProcessMessage(sender_id, recipient_id, message) {
 
 
                         SendMessage(TypeMessage_Text, recipient_id, await CallAPI("POST", service_host, service_port, '/api/v1/Stock/GetStock_ByArea', request_body));
-                    } else SendMessage(TypeMessage_Text, sender_id, sNotpermisstion);
+                    } else SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
 
                 } else if (command[0].toUpperCase() === 'STOCK') {
 
@@ -309,7 +311,7 @@ async function ProcessMessage(sender_id, recipient_id, message) {
                         });
                         SendMessage(TypeMessage_Text, recipient_id, await CallAPI("POST", service_host, service_port, '/api/v1/Stock/GetSotck_ByLoc', request_body));
                     } else {
-                        SendMessage(TypeMessage_Text, sender_id, sNotpermisstion);
+                        SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
                     }
                 } else if (command[0].toUpperCase() === 'DISTRICT') {
 
