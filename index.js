@@ -7,6 +7,8 @@ express = require('express'),
 app.listen(process.env.PORT || 1234, () => console.log('webhook is listening'));
 var service_host =  '10.17.1.32';
 var service_port = '9862';
+var apifacebook_host = 'graph.facebook.com';
+var apifacebook_path = '/v4.0/me/messages?access_token=DQVJ0WXM1NFVCc2xvRTVLZAU9wMjJCVGlGdlZAmRWdWUzVzMDJmekVnSS1hbHdOaVVFV3cwa2FYbnZAxX0NnOU9OX0l1R3c5cmtuVTkxSmxuc2QtX2NwdGw3SzRKS3Q4NU9YbEtsMmp1azBhdGFHcVFOak1faGdNUDlCMVgxc3ZAqMFhqd2RjQXhGRFlzTjRITEtnMDVYeC1qVEtKd2NZAZATZAPZAzN1MHJ2YjRqb1pSb0w1LUlkV0s0QUYzYmxzZA1pTWXF0dldDWW9R';
 var TypeMessage_Text = "Text";
 var TypeMessage_Generic = "Generic";
 var botName = "@OFMOpBot";
@@ -80,10 +82,72 @@ app.post('/BI/webhook', (req, res) => {
 
 });
 
+function CallAPI(sTypeCall, sHost, sPort, sPath, request_body) {
+    try {
+
+        return new Promise(function(resolve, reject) {
+
+            if (!request_body) {
+
+                var options = {
+                    host: sHost,
+                    port: sPort,
+                    path: sPath,
+                    method: sTypeCall
+                }
+
+                var http = require('http');
+
+                var req = http.request(options, function(res) {
+                    res.setEncoding('utf8');
+
+                    res.on('data', function(chunk) {
+
+                        return resolve(chunk);;
+
+                    });
+                });
+                req.end();
+            } else {
+
+                var options = {
+                    host: sHost,
+                    port: sPort,
+                    path: sPath,
+                    method: sTypeCall,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Content-Lenght": Buffer.byteLength(request_body)
+                    }
+                }
+                var http = require('http');
+                var req = http.request(options, function(res) {
+                    res.setEncoding('utf8');
+
+                    res.on('data', function(chunk) {
+
+                        return resolve(chunk);;
 
 
 
-function ProcessMessage(sender_psid, message) {
+                    });
+                });
+                req.write(request_body);
+                req.end();
+            }
+
+
+        });
+
+
+    } catch (express) {
+        console.log('CallAPI :' + express);
+    }
+
+
+}
+
+async function ProcessMessage(sender_id, recipient_id, message) {
 
     try {
 
@@ -97,276 +161,168 @@ function ProcessMessage(sender_psid, message) {
 
         if (CountSpace != 0) message = message.slice(CountSpace, message.length);
 
+        var level = await CallAPI("GET", service_host, service_port, '/api/v1/Permission/CheckPermission?PSID=' + sender_id);
+
+        //console.log("level "+level);
+
+        var empty = "คำถามไม่ถูกตรงตามรูปแบบ";
+        var sNotpermisstion = "คุณไม่สามารถเข้าถึง Bot ได้ กรุณาติดต่อ IT"
+
+        if (level.toUpperCase() != '') {
+            var command = message.split(' ');
 
 
+            if (command.length > 0 && command.length == 1) {
 
-        var command = message.split(' ');
-        var empty = "คำถามไม่ถูกตรงตามรูปแบบ ต้องระบุเป็น Ex. Sales store, Store= Code ,Number,Short name";
+                if (command[0].toUpperCase() === 'HELP') {
 
-        if (command.length > 0 && command.length == 1) {
+                    var messageHelp = await CallAPI("GET", service_host, service_port, '/api/v1/Permission/getHelp?sLevel=' + level);
 
+                    /*
+                    var s = '##############help#################\n';
+                    s += 'Pattern Chat with Bot\n';
+                    s += '\n';
+                    s += '1.Question Daily Sales Volumn to Bot.\n';
+                    s += '\n';
+                    s += '#Pattern I Chat text\n';
+                    s += 'Format:"Sales(space)XXXXX"\n';
+                    s += '"Sales"-Fixed wording\n';
+                    s += '"XXXXX"-(StoreNumber or StoreCode or Thai Name or Eng Name or Short Name Code)\n';
+                    s += '\n';
+                    s += 'EX:\n';
+                    s += 'Sales 58\n';
+                    s += 'Sales JTC\n';
+                    s += '\n';
+                    s += '#Pattern II Carousel\n';
+                    s += 'Keyword for Carousel is (Sales, Sale, ยอดขาย)\n';
+                    s += '* when use this keyword Bot show Carousel\n';
+                    s += '1st select carousel district Manager\n';
+                    s += '2nd select carousel store under district Manager\n';
+                    s += 'Bot will display Daily Sale Volumn\n';
+                    s += '\n';
+                    s += '2.Question Stock Realtime by Store to Bot.\n';
+                    s += '\n';
+                    s += '#Pattern I Chat text\n';
+                    s += 'Format:"Stock(space)XXXXX(space)PID/SKU(space)YYYYYYY(space)YYYYYYY...\n';
+                    s += '"Stock"-Fixed wording\n';
+                    s += '"PID/SKU"-use one for question "PID" or "SKU"\n';
+                    s += '"XXXXX"-(StoreNumber or StoreCode or Thai Name or Eng Name or Short Name Code)\n';
+                    s += '"YYYYYYY"-PID Code or SKU Code (limited 5 items)\n';
+                    s += '\n';
+                    s += 'EX:\n';
+                    s += 'Stock JTC PID 8000004 8151390 8000005 8030370 8031610\n';
+                    s += 'Stock JTC SKU 149345 149347 149353 149361 14936\n';
+                    s += 'Stock 58 PID 8000004 8151390 8000005 8030370 8031610\n';
+                    s += '\n';
+                    s += '\n';
+                    s += '3.Question Check Location near Stock to Bot.\n';
+                    s += '\n';
+                    s += '#Pattern I Chat text\n';
+                    s += 'Format:"LOC(space)ZZZZZZ(space)PID/SKU(space)YYYYYYY(space)YYYYYYY..."\n';
+                    s += '"Stock"-Fixed wording\n';
+                    s += '"PID/SKU"-use one for question "PID" or "SKU"\n';
+                    s += '"ZZZZZZ"-(Location รหัสเขตที่ต้องการลูกค้าต้องการสินค้า)\n';
+                    s += '"YYYYYYY"-PID Code or SKU Code (limited 5 items)\n';
+                    s += 'Note: sequence setup by store operation\n';
+                    s += 'เขต-สัมพันธวงศ์ ,ป้อมปราบศัตรูพ่าย,บางคอแหลม,คลองสาน,ยานนาวา,ราชเทวี,ดินแดง,พญาไท,สาทร,ห้วยขวาง,บางรัก,ปทุมวัน,คลองเตย,วัฒนา\n';
+                    s += '\n'
+                    s += 'EX:\n';
+                    s += 'LOC ดินแดง PID 8000004 8151390 8000005 8030370 8031610\n';
+                    s += 'LOC ดินแดง SKU 149345 149347 149353 149361 14936\n';
+                    s += 'LOC ห้วยขวาง PID 8000004 8151390 8000005 8030370 8031610\n';
+                    //  s +=  '--------------------------------\n'; 
+    
+                    console.log('Value : ' + s);
 
-            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
+                    */
 
+                    SendMessage(TypeMessage_Text, sender_id, messageHelp);
+                } else {
+                    if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
+                        if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'SALE') {
+                            SendMessage(TypeMessage_Generic, recipient_id, await CallAPI("GET", service_host, service_port, '/api/v1/Sales/GetDistrict'));
+                        } else SendMessage(TypeMessage_Text, sender_id, sNotpermisstion);
 
-                var options = {
-                    host: service_host,
-                    port: service_port,
-                    path: '/api/v1/Sales/GetDistrict',
-                    method: "GET"
-                }
-
-                var http = require('http');
-
-
-                var req = http.request(options, function(res) {
-                    res.setEncoding('utf8');
-
-                    res.on('data', function(chunk) {
-
-                        SendMessage(TypeMessage_Generic, sender_psid, chunk);
-
-
-
-                    });
-                });
-                req.end();
-
-
-
-            }
-            else if (command[0].toUpperCase() === 'HELP') {
-
-                var s = '##############help#################\n';
-                s += 'Pattern Chat with Bot\n'
-                s +=  '\n';
-                s +=  '1.Question Daily Sales Volumn to Bot.\n';
-                s +=  '\n';
-                s +=  '#Pattern I Chat text\n';
-                s +=  'Format:"Sales(space)XXXXX"\n';
-                s +=  '"Sales"-Fixed wording\n';
-                s +=  '"XXXXX"-(StoreNumber or StoreCode or Thai Name or Eng Name or Short Name Code)\n';
-                s +=  '\n';
-                s +=  'EX:\n';
-                s +=  'Sales 58\n';
-                s +=  'Sales JTC\n';
-                s +=  '\n';
-                s +=  '#Pattern II Carousel\n';
-                s +=  'Keyword for Carousel is (Sales, Sale, ยอดขาย)\n';
-                s +=  '* when use this keyword Bot show Carousel\n';
-                s +=  '1st select carousel district Manager\n';
-                s +=  '2nd select carousel store under district Manager\n';
-                s +=  'Bot will display Daily Sale Volumn\n';
-                s +=  '\n';
-                s +=  '2.Question Stock Realtime by Store to Bot.\n';
-                s +=  '\n';
-                s +=  '#Pattern I Chat text\n';
-                s +=  'Format:"Stock(space)XXXXX(space)PID/SKU(space)YYYYYYY(space)YYYYYYY...\n';
-                s +=  '"Stock"-Fixed wording\n';
-                s +=  '"PID/SKU"-use one for question "PID" or "SKU"\n';
-                s +=  '"XXXXX"-(StoreNumber or StoreCode or Thai Name or Eng Name or Short Name Code)\n'; 
-                s +=  '"YYYYYYY"-PID Code or SKU Code (limited 5 items)\n';
-                s +=  '\n';
-                s +=  'EX:\n';
-                s +=  'Stock JTC PID 8000004 8151390 8000005 8030370 8031610\n';
-                s +=  'Stock JTC SKU 149345 149347 149353 149361 14936\n';
-                s +=  'Stock 58 PID 8000004 8151390 8000005 8030370 8031610\n';
-                s +=  '\n';
-                s +=  '\n';
-                s +=  '3.Question Check Location near Stock to Bot.\n';
-                s +=  '\n';
-                s +=  '#Pattern I Chat text\n';
-                s +=  'Format:"LOC(space)ZZZZZZ(space)PID/SKU(space)YYYYYYY(space)YYYYYYY..."\n';
-                s +=  '"Stock"-Fixed wording\n';
-                s +=  '"PID/SKU"-use one for question "PID" or "SKU"\n';
-                s +=  '"ZZZZZZ"-(Location รหัสเขตที่ต้องการลูกค้าต้องการสินค้า)\n'; 
-                s +=  '"YYYYYYY"-PID Code or SKU Code (limited 5 items)\n';
-                s +=  'Note: sequence setup by store operation\n';
-                s +=  'เขต-สัมพันธวงศ์ ,ป้อมปราบศัตรูพ่าย,บางคอแหลม,คลองสาน,ยานนาวา,ราชเทวี,ดินแดง,พญาไท,สาทร,ห้วยขวาง,บางรัก,ปทุมวัน,คลองเตย,วัฒนา\n';
-                s +=  '\n'
-                s +=  'EX:\n';
-                s +=  'LOC ดินแดง PID 8000004 8151390 8000005 8030370 8031610\n';
-                s +=  'LOC ดินแดง SKU 149345 149347 149353 149361 14936\n';
-                s +=  'LOC ห้วยขวาง PID 8000004 8151390 8000005 8030370 8031610\n';
-              //  s +=  '--------------------------------\n';
-                
-               // console.log('Value : '+s);
-                SendMessage(TypeMessage_Text, sender_psid, s);
-            }
-             else {
-                SendMessage(TypeMessage_Text, sender_psid, empty);
-            }
-
-
-        } else if (command.length > 1) {
-
-
-
-            if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
-                var request_body = JSON.stringify({
-
-                    "message": command[1]
-
-                });
-
-
-                var options = {
-                    host: service_host,
-                    port: service_port,
-                    path: '/api/v1/Sales/GetSales',
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Content-Lenght": Buffer.byteLength(request_body)
+                    } else {
+                        SendMessage(TypeMessage_Text, sender_id, empty);
                     }
+
+
+
                 }
 
-                var http = require('http');
-
-
-                var req = http.request(options, function(res) {
-                    res.setEncoding('utf8');
-
-                    res.on('data', function(chunk) {
-                        SendMessage(TypeMessage_Text, sender_psid, chunk);
+            } else if (command.length > 1) {
 
 
 
-                    });
-                });
-                req.write(request_body);
-                req.end();
-            } else if (command[0].toUpperCase() === 'LOC' || command[0].toUpperCase() === 'LOCATION') {
-                var stext = '';
+                if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
 
-                for (i = 1; i < command.length; i++) {
-                    stext += command[i] + ' ';
-                }
+                    if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'SALE') {
+                        var request_body = JSON.stringify({
 
-                stext = stext.substring(0, stext.length - 1);
+                            "message": command[1]
+                        });
 
-                //  console.log('stext : '+stext);
-
-                var request_body = JSON.stringify({
-
-                    "message": stext
-
-                });
-
-                var options = {
-                    host: service_host,
-                    port: service_port,
-                    path: '/api/v1/Stock/GetStock_ByArea',
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Content-Lenght": Buffer.byteLength(request_body)
+                        SendMessage(TypeMessage_Text, recipient_id, await CallAPI("POST", service_host, service_port, '/api/v1/Sales/GetSales', request_body));
+                    } else {
+                        SendMessage(TypeMessage_Text, sender_id, sNotpermisstion);
                     }
-                }
-
-                var http = require('http');
 
 
-                var req = http.request(options, function(res) {
-                    res.setEncoding('utf8');
+                } else if (command[0].toUpperCase() === 'LOC' || command[0].toUpperCase() === 'LOCATION') {
 
-                    res.on('data', function(chunk) {
-                        SendMessage(TypeMessage_Text, sender_psid, chunk);
+                    if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'STOCK') {
+                        var stext = '';
 
+                        for (i = 1; i < command.length; i++) {
+                            stext += command[i] + ' ';
+                        }
 
+                        stext = stext.substring(0, stext.length - 1);
 
-                    });
-                });
-                req.write(request_body);
-                req.end();
-            } else if (command[0].toUpperCase() === 'STOCK') {
-                var stext = '';
+                        var request_body = JSON.stringify({
 
-                for (i = 1; i < command.length; i++) {
-                    stext += command[i] + ' ';
-                }
+                            "message": stext
 
-                stext = stext.substring(0, stext.length - 1);
-
-                //  console.log('stext : '+stext);
-
-                var request_body = JSON.stringify({
-
-                    "message": stext
-
-                });
+                        });
 
 
+                        SendMessage(TypeMessage_Text, recipient_id, await CallAPI("POST", service_host, service_port, '/api/v1/Stock/GetStock_ByArea', request_body));
+                    } else SendMessage(TypeMessage_Text, sender_id, sNotpermisstion);
 
-                var options = {
-                    host: service_host,
-                    port: service_port,
-                    path: '/api/v1/Stock/GetSotck_ByLoc',
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Content-Lenght": Buffer.byteLength(request_body)
+                } else if (command[0].toUpperCase() === 'STOCK') {
+
+                    if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'STOCK') {
+                        var stext = '';
+
+                        for (i = 1; i < command.length; i++) {
+                            stext += command[i] + ' ';
+                        }
+
+                        stext = stext.substring(0, stext.length - 1);
+                        var request_body = JSON.stringify({
+
+                            "message": stext
+
+                        });
+                        SendMessage(TypeMessage_Text, recipient_id, await CallAPI("POST", service_host, service_port, '/api/v1/Stock/GetSotck_ByLoc', request_body));
+                    } else {
+                        SendMessage(TypeMessage_Text, sender_id, sNotpermisstion);
                     }
+                } else if (command[0].toUpperCase() === 'DISTRICT') {
+
+                    SendMessage(TypeMessage_Generic, recipient_id, await CallAPI("GET", service_host, service_port, '/api/v1/Sales/GetStore?DistrictID=' + command[1]));
+                } else {
+                    SendMessage(TypeMessage_Text, recipient_id, empty);
                 }
 
-                var http = require('http');
-
-
-                var req = http.request(options, function(res) {
-                    res.setEncoding('utf8');
-
-                    res.on('data', function(chunk) {
-                        SendMessage(TypeMessage_Text, sender_psid, chunk);
-
-
-
-                    });
-                });
-                req.write(request_body);
-                req.end();
-            } else if (command[0].toUpperCase() === 'DISTRICT') {
-
-
-
-                var options = {
-                    host: service_host,
-                    port: service_port,
-                    path: '/api/v1/Sales/GetStore?DistrictID=' + command[1],
-                    method: "GET"
-
-                }
-
-
-
-                var http = require('http');
-
-
-                var req = http.request(options, function(res) {
-                    res.setEncoding('utf8');
-
-                    res.on('data', function(chunk) {
-                        SendMessage(TypeMessage_Generic, sender_psid, chunk);
-
-
-
-                    });
-                });
-                req.end();
-
-
-
-            }
-
-            else {
-                SendMessage(TypeMessage_Text, sender_psid, empty);
+            } else {
+                SendMessage(TypeMessage_Text, recipient_id, empty);
             }
 
         } else {
-            SendMessage(TypeMessage_Text, sender_psid, empty);
+            SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
         }
-
-
-
 
     } catch (express) {
         console.log('ProcessMessage :' + express);
@@ -375,7 +331,7 @@ function ProcessMessage(sender_psid, message) {
 
 }
 
-function SendMessage(type, sender_psid, Message) {
+function SendMessage(type, recipient_id, Message) {
     // Construct the message body
     try {
         var arrayMessage = [];
@@ -409,9 +365,9 @@ function SendMessage(type, sender_psid, Message) {
                         //  +'","webview_height_ratio": "'+Value[index]['default_action']['webview_height_ratio']+'"}';
 
                         if (Value[index]['button']['type'] === 'postback') {
-                            data += ',"buttons": [{"type":"' + Value[index]['button']['type'] 
-                            + '","title":"' + Value[index]['button']['title'] 
-                            + '","payload":"' +sender_psid+","+ Value[index]['button']['payload'] + '"}]';
+                            data += ',"buttons": [{"type":"' + Value[index]['button']['type'] +
+                                '","title":"' + Value[index]['button']['title'] +
+                                '","payload":"' + recipient_id + "," + Value[index]['button']['payload'] + '"}]';
                         }
 
                         data += '}';
@@ -421,11 +377,11 @@ function SendMessage(type, sender_psid, Message) {
                     data = "[" + data + "]";
 
 
-                    if (sender_psid.search('t_') > -1) {
+                    if (recipient_id.search('t_') > -1) {
                         request_body = JSON.stringify({
                             "messaging_type": "RESPONSE",
                             "recipient": {
-                                "thread_key": sender_psid
+                                "thread_key": recipient_id
                             },
                             "message": {
                                 "attachment": {
@@ -444,7 +400,7 @@ function SendMessage(type, sender_psid, Message) {
                         request_body = JSON.stringify({
                             "messaging_type": "RESPONSE",
                             "recipient": {
-                                "id": sender_psid
+                                "id": recipient_id
                             },
                             "message": {
                                 "attachment": {
@@ -467,12 +423,12 @@ function SendMessage(type, sender_psid, Message) {
             }
 
         } else {
-            if (sender_psid.search('t_') > -1) {
+            if (recipient_id.search('t_') > -1) {
 
                 request_body = JSON.stringify({
                     "messaging_type": "RESPONSE",
                     "recipient": {
-                        "thread_key": sender_psid
+                        "thread_key": recipient_id
                     },
                     "message": {
                         "text": Message
@@ -483,7 +439,7 @@ function SendMessage(type, sender_psid, Message) {
                 request_body = JSON.stringify({
                     "messaging_type": "RESPONSE",
                     "recipient": {
-                        "id": sender_psid
+                        "id": recipient_id
                     },
                     "message": {
                         "text": Message
@@ -499,8 +455,8 @@ function SendMessage(type, sender_psid, Message) {
             setTimeout(function() {
 
                 var options = {
-                    host: "graph.facebook.com",
-                    path: "/v4.0/me/messages?access_token=DQVJ0WXM1NFVCc2xvRTVLZAU9wMjJCVGlGdlZAmRWdWUzVzMDJmekVnSS1hbHdOaVVFV3cwa2FYbnZAxX0NnOU9OX0l1R3c5cmtuVTkxSmxuc2QtX2NwdGw3SzRKS3Q4NU9YbEtsMmp1azBhdGFHcVFOak1faGdNUDlCMVgxc3ZAqMFhqd2RjQXhGRFlzTjRITEtnMDVYeC1qVEtKd2NZAZATZAPZAzN1MHJ2YjRqb1pSb0w1LUlkV0s0QUYzYmxzZA1pTWXF0dldDWW9R",
+                    host: apifacebook_host,
+                    path: apifacebook_path,
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -514,7 +470,7 @@ function SendMessage(type, sender_psid, Message) {
                 var req = https.request(options, function(res) {
                     res.setEncoding('utf8');
                     res.on('data', function(chunk) {
-                        console.log('Complete : ' + chunk);
+                        // console.log('Complete : ' + chunk);
                     });
                 })
                 req.write(element);
