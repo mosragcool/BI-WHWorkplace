@@ -37,29 +37,31 @@ app.post('/BI/webhook', (req, res) => {
                 let webhook_event = entry.messaging[0];
 
                 if (webhook_event.message && webhook_event.message.text) {
-
+                var Message = '';
+                var sender_id = webhook_event.sender.id;
+                var recipient_id = '';
                     if (webhook_event.thread) {
 
 
-                        var sender_psid = webhook_event.thread.id;
+                        recipient_id = webhook_event.thread.id;
                         var splitNameBot = webhook_event.message.text.split(botName);
                         if (splitNameBot.length > 1) {
-                            var Message = splitNameBot[1]; //.replace(/ /g,'')
+                             Message = splitNameBot[1]; //.replace(/ /g,'')
                         }
-                        ProcessMessage(sender_psid, Message);
+                        ProcessMessage(sender_id,recipient_id, Message);
                     } else {
-                        sender_psid = webhook_event.sender.id;
+                        recipient_id = webhook_event.sender.id;
 
-                        var Message = webhook_event.message.text;
-                        ProcessMessage(sender_psid, Message);
+                         Message = webhook_event.message.text;
+                        ProcessMessage(sender_id,recipient_id, Message);
                     }
                 } else if (webhook_event.postback) {
                 
                    var splitMessage = webhook_event.postback.payload.split(',');
 
-                    var sender_psid = splitMessage[0];
-                    var Message = splitMessage[1];
-                    ProcessMessage(sender_psid, Message);
+                   recipient_id = splitMessage[0];
+                     Message = splitMessage[1];
+                    ProcessMessage(sender_id,recipient_id, Message);
 
                 }
                 //  else console.log('No property Message');
