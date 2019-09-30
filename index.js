@@ -35,10 +35,12 @@ app.post('/BI/webhook', (req, res) => {
             body.entry.forEach(function(entry) {
 
                 let webhook_event = entry.messaging[0];
-
+    
+              var sender_id = webhook_event.sender.id;
+            
                 if (webhook_event.message && webhook_event.message.text) {
                 var Message = '';
-                var sender_id = webhook_event.sender.id;
+              
                 var recipient_id = '';
                     if (webhook_event.thread) {
 
@@ -170,7 +172,7 @@ async function ProcessMessage(sender_id, recipient_id, message) {
         //console.log("level "+level);
 
         var empty = "คำถามไม่ถูกตรงตามรูปแบบ";
-        var sNotpermisstion = "คุณไม่สามารถเข้าถึง Bot ได้ กรุณาติดต่อ IT"
+        var sNotpermisstion = "คุณไม่สามารถเข้าถึง Bot ได้ กรุณาติดต่อ ServiceDesk OFM"
 
         if (level.toUpperCase() != '') {
             var command = message.split(' ');
@@ -315,7 +317,17 @@ async function ProcessMessage(sender_id, recipient_id, message) {
                     }
                 } else if (command[0].toUpperCase() === 'DISTRICT') {
 
-                    SendMessage(TypeMessage_Generic, recipient_id, await CallAPI("GET", service_host, service_port, '/api/v1/Sales/GetStore?DistrictID=' + command[1]));
+                    if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'SALE')
+                    {
+                        SendMessage(TypeMessage_Generic, recipient_id, await CallAPI("GET", service_host, service_port, '/api/v1/Sales/GetStore?DistrictID=' + command[1]));
+                    }
+                    else
+                    {
+                        SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
+                    }
+
+
+                   
                 } else {
                     SendMessage(TypeMessage_Text, recipient_id, empty);
                 }
