@@ -388,7 +388,7 @@ function SendMessage(type, recipient_id, Message) {
 
                         data += '}';
 
-                        if (index != 10 && index != Value.length - 1) data += ",";
+                        if (index != 9 && index != Value.length - 1) data += ",";
                     }
                     data = "[" + data + "]";
 
@@ -466,7 +466,7 @@ function SendMessage(type, recipient_id, Message) {
             arrayMessage.push(request_body);
         }
 
-
+        var timeSleep = 0;
         arrayMessage.forEach(element => {
             setTimeout(function() {
 
@@ -492,7 +492,8 @@ function SendMessage(type, recipient_id, Message) {
                 req.write(element);
                 req.end();
 
-            }, 1000);
+            }, timeSleep);
+            timeSleep = 1000;
         });
 
 
