@@ -279,6 +279,26 @@ async function ProcessMessage(sender_id, recipient_id, message) {
 
 
                 }
+                else if(command[0].toUpperCase() === 'SUMMARYSALESBYDISTRICT')
+                {
+                    if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'SALE')
+                    {
+                    
+                        var request_body = JSON.stringify({
+
+                            "message": "SUMMARYBYDISTRICT_"+command[1]
+
+                        });
+
+                    
+            
+                        SendMessage(TypeMessage_Text, recipient_id, await CallAPI("POST", service_host, service_port, '/api/v1/Sales/GetSales', request_body));
+                    }
+                    else
+                    {
+                        SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
+                    }
+                }
                 else if(command[0].toUpperCase() === 'ALLSALESBYDISTRICT')
                 {
                 
@@ -371,6 +391,8 @@ async function ProcessMessage(sender_id, recipient_id, message) {
 
 }
 
+
+
 function SendMessage(type, recipient_id, Message) {
     // Construct the message body
     try {
@@ -447,6 +469,8 @@ function SendMessage(type, recipient_id, Message) {
                             }
                         });
 
+                       
+
                     } else {
 
                         request_body = JSON.stringify({
@@ -466,7 +490,10 @@ function SendMessage(type, recipient_id, Message) {
                             }
 
                         });
+                        
                     }
+
+                    console.log(request_body);
                     arrayMessage.push(request_body);
 
                 }
@@ -539,7 +566,6 @@ var timeSleep = 0;
     }
 
 }
-
 
 
 
