@@ -171,12 +171,15 @@ async function ProcessMessage(sender_id, recipient_id, message) {
 
         //console.log("level "+level);
 
+        //console.log("message : "+message);
+
         var empty = "คำถามไม่ถูกตรงตามรูปแบบ";
         var sNotpermisstion = "คุณไม่สามารถเข้าถึง Bot ได้ กรุณาติดต่อ ServiceDesk OFM"
 
         if (level.toUpperCase() != '') {
             var command = message.split(' ');
 
+      
 
             if (command.length > 0 && command.length == 1) {
 
@@ -258,8 +261,8 @@ async function ProcessMessage(sender_id, recipient_id, message) {
                 }
 
             } else if (command.length > 1) {
-
-
+             
+              
 
                 if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
 
@@ -275,7 +278,29 @@ async function ProcessMessage(sender_id, recipient_id, message) {
                     }
 
 
-                } else if (command[0].toUpperCase() === 'LOC' || command[0].toUpperCase() === 'LOCATION') {
+                }
+                else if(command[0].toUpperCase() === 'ALLSALESBYDISTRICT')
+                {
+                
+
+                    if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'SALE')
+                    {
+                    
+                        var request_body = JSON.stringify({
+
+                            "message": "BYDISTRICT_"+command[1]
+
+                        });
+                        SendMessage(TypeMessage_Text, recipient_id,"โปรดรอสักครู่");
+
+                        SendMessage(TypeMessage_Text, recipient_id, await CallAPI("POST", service_host, service_port, '/api/v1/Sales/GetSales', request_body));
+                    }
+                    else
+                    {
+                        SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
+                    }
+                }
+                else if (command[0].toUpperCase() === 'LOC' || command[0].toUpperCase() === 'LOCATION') {
 
                     if (level.toUpperCase() === 'ADMIN' || level.toUpperCase() === 'ALL' || level.toUpperCase() === 'STOCK') {
                         var stext = '';
@@ -326,9 +351,8 @@ async function ProcessMessage(sender_id, recipient_id, message) {
                         SendMessage(TypeMessage_Text, recipient_id, sNotpermisstion);
                     }
 
-
-                   
-                } else {
+                }
+                else {
                     SendMessage(TypeMessage_Text, recipient_id, empty);
                 }
 
@@ -376,23 +400,35 @@ function SendMessage(type, recipient_id, Message) {
 
                         data += '{ "title": "' + Value[index]['title'] + '","image_url": "' + Value[index]['image_url'] +
                             '","subtitle": "' + Value[index]['subTitle'] + '"';
-                        //  +'","default_action":{"type":"'
-                        //  +Value[index]['default_action']['type']+'","url": "'+Value[index]['default_action']['url']
-                        //  +'","webview_height_ratio": "'+Value[index]['default_action']['webview_height_ratio']+'"}';
 
-                        if (Value[index]['button']['type'] === 'postback') {
-                            data += ',"buttons": [{"type":"' + Value[index]['button']['type'] +
-                                '","title":"' + Value[index]['button']['title'] +
-                                '","payload":"' + recipient_id + "," + Value[index]['button']['payload'] + '"}]';
+                        
+                        if(Value[index]['button'].length>0)
+                        {
+                            var buttons = Value[index]['button'];
+                            data += ',"buttons": [';
+                            for (let j = 0; j < buttons.length; j++) {
+                                
+                                if (buttons[j]['type'] === 'postback') {
+                                    data +='{"type":"' + buttons[j]['type'] +
+                                        '","title":"' + buttons[j]['title'] +
+                                        '","payload":"' + recipient_id + "," + buttons[j]['payload'] + '"}';
+                                }
+
+                                if(j != buttons.length-1)  data += ',';
+                                
+                            }
+                            data += ']';
+                          
+    
+                         
                         }
-
                         data += '}';
+                      
 
                         if (index != 9 && index != Value.length - 1) data += ",";
                     }
                     data = "[" + data + "]";
-
-
+                 
                     if (recipient_id.search('t_') > -1) {
                         request_body = JSON.stringify({
                             "messaging_type": "RESPONSE",
@@ -451,7 +487,7 @@ function SendMessage(type, recipient_id, Message) {
                     }
                 });
             } else {
-
+               
                 request_body = JSON.stringify({
                     "messaging_type": "RESPONSE",
                     "recipient": {
@@ -466,7 +502,7 @@ function SendMessage(type, recipient_id, Message) {
             arrayMessage.push(request_body);
         }
 
-        var timeSleep = 0;
+var timeSleep = 0;
         arrayMessage.forEach(element => {
             setTimeout(function() {
 
