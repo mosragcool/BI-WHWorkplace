@@ -5,7 +5,7 @@ express = require('express'),
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1234, () => console.log('webhook is listening'));
-var service_host =  '10.17.1.32';
+var service_host =  '10.17.1.95';
 var service_port = '9862';
 var apifacebook_host = 'graph.facebook.com';
 var apifacebook_path = '/v4.0/me/messages?access_token=DQVJ0WXM1NFVCc2xvRTVLZAU9wMjJCVGlGdlZAmRWdWUzVzMDJmekVnSS1hbHdOaVVFV3cwa2FYbnZAxX0NnOU9OX0l1R3c5cmtuVTkxSmxuc2QtX2NwdGw3SzRKS3Q4NU9YbEtsMmp1azBhdGFHcVFOak1faGdNUDlCMVgxc3ZAqMFhqd2RjQXhGRFlzTjRITEtnMDVYeC1qVEtKd2NZAZATZAPZAzN1MHJ2YjRqb1pSb0w1LUlkV0s0QUYzYmxzZA1pTWXF0dldDWW9R';
@@ -187,64 +187,7 @@ async function ProcessMessage(sender_id, recipient_id, message) {
 
                     var messageHelp = await CallAPI("GET", service_host, service_port, '/api/v1/Permission/getHelp?sLevel=' + level);
 
-                    /*
-                    var s = '##############help#################\n';
-                    s += 'Pattern Chat with Bot\n';
-                    s += '\n';
-                    s += '1.Question Daily Sales Volumn to Bot.\n';
-                    s += '\n';
-                    s += '#Pattern I Chat text\n';
-                    s += 'Format:"Sales(space)XXXXX"\n';
-                    s += '"Sales"-Fixed wording\n';
-                    s += '"XXXXX"-(StoreNumber or StoreCode or Thai Name or Eng Name or Short Name Code)\n';
-                    s += '\n';
-                    s += 'EX:\n';
-                    s += 'Sales 58\n';
-                    s += 'Sales JTC\n';
-                    s += '\n';
-                    s += '#Pattern II Carousel\n';
-                    s += 'Keyword for Carousel is (Sales, Sale, ยอดขาย)\n';
-                    s += '* when use this keyword Bot show Carousel\n';
-                    s += '1st select carousel district Manager\n';
-                    s += '2nd select carousel store under district Manager\n';
-                    s += 'Bot will display Daily Sale Volumn\n';
-                    s += '\n';
-                    s += '2.Question Stock Realtime by Store to Bot.\n';
-                    s += '\n';
-                    s += '#Pattern I Chat text\n';
-                    s += 'Format:"Stock(space)XXXXX(space)PID/SKU(space)YYYYYYY(space)YYYYYYY...\n';
-                    s += '"Stock"-Fixed wording\n';
-                    s += '"PID/SKU"-use one for question "PID" or "SKU"\n';
-                    s += '"XXXXX"-(StoreNumber or StoreCode or Thai Name or Eng Name or Short Name Code)\n';
-                    s += '"YYYYYYY"-PID Code or SKU Code (limited 5 items)\n';
-                    s += '\n';
-                    s += 'EX:\n';
-                    s += 'Stock JTC PID 8000004 8151390 8000005 8030370 8031610\n';
-                    s += 'Stock JTC SKU 149345 149347 149353 149361 14936\n';
-                    s += 'Stock 58 PID 8000004 8151390 8000005 8030370 8031610\n';
-                    s += '\n';
-                    s += '\n';
-                    s += '3.Question Check Location near Stock to Bot.\n';
-                    s += '\n';
-                    s += '#Pattern I Chat text\n';
-                    s += 'Format:"LOC(space)ZZZZZZ(space)PID/SKU(space)YYYYYYY(space)YYYYYYY..."\n';
-                    s += '"Stock"-Fixed wording\n';
-                    s += '"PID/SKU"-use one for question "PID" or "SKU"\n';
-                    s += '"ZZZZZZ"-(Location รหัสเขตที่ต้องการลูกค้าต้องการสินค้า)\n';
-                    s += '"YYYYYYY"-PID Code or SKU Code (limited 5 items)\n';
-                    s += 'Note: sequence setup by store operation\n';
-                    s += 'เขต-สัมพันธวงศ์ ,ป้อมปราบศัตรูพ่าย,บางคอแหลม,คลองสาน,ยานนาวา,ราชเทวี,ดินแดง,พญาไท,สาทร,ห้วยขวาง,บางรัก,ปทุมวัน,คลองเตย,วัฒนา\n';
-                    s += '\n'
-                    s += 'EX:\n';
-                    s += 'LOC ดินแดง PID 8000004 8151390 8000005 8030370 8031610\n';
-                    s += 'LOC ดินแดง SKU 149345 149347 149353 149361 14936\n';
-                    s += 'LOC ห้วยขวาง PID 8000004 8151390 8000005 8030370 8031610\n';
-                    //  s +=  '--------------------------------\n'; 
-    
-                    console.log('Value : ' + s);
-
-                    */
-
+         
                     SendMessage(TypeMessage_Text, recipient_id, messageHelp);
                 } else {
                     if (command[0].toUpperCase() === 'S' || command[0] === 'ยอดขาย' || command[0].toUpperCase() === 'SALES' || command[0].toUpperCase() === 'SALE') {
